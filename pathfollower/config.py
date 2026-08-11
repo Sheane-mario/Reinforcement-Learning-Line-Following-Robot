@@ -38,8 +38,20 @@ WHITE_MIN = 45      # >= this  -> WHITE  (clearly on the tape)
 # EDGE band = (BLACK_MAX, WHITE_MIN)   i.e. 26..44 -> EDGE (the good state)
 
 # LOST detection: how many consecutive steps stuck at an extreme (all WHITE or
-# all BLACK, i.e. off the edge) before we declare the LOST state.
-LOST_K = 8
+# all BLACK, i.e. off the edge) before we declare the LOST state. Raised 8->15
+# so LOST means TRULY stuck (gives arc-turns time to recover first, and stops
+# LOST from being entered so often that it becomes an absorbing sink).
+LOST_K = 15
+
+# ---------------------------------------------------------------------------
+# Reward shaping magnitudes (see mdp.reward). These score the OUTCOME STATE --
+# they never name which action is "right" (that stays learned, not hardcoded).
+# ---------------------------------------------------------------------------
+REWARD_EDGE = 10.0          # on the edge -- the goal state (highest)
+REWARD_FORWARD_BONUS = 2.0  # extra for FORWARD while on the edge (progress)
+REWARD_OFF = 0.0            # WHITE/BLACK: off the edge but not yet lost
+REWARD_LOST = -4.0          # stuck. Softened -10 -> -4 so LOST stops being an
+                            # absorbing sink the robot can never climb out of.
 
 # ---------------------------------------------------------------------------
 # IR obstacle detection (proximity 0-100, low = close)
@@ -55,7 +67,12 @@ IR_CONFIRM_READS = 3         # require this many consecutive close reads
 # ---------------------------------------------------------------------------
 TRAIN_SPEED = 25    # slow during training -> better discrete-time approximation
 DEMO_SPEED = 45     # faster once the policy is frozen
-TURN_DIFF = 20      # differential magnitude for LEFT/RIGHT pivots
+# Turns are gentle forward-ARCS, not in-place pivots: the inner wheel runs at
+# this fraction of drive speed while the outer wheel runs full. This lets the
+# robot correct while still moving forward so it can ride a thin edge (in-place
+# pivots overshoot a sharp edge and lose the line). Also makes REVERSE the only
+# action that moves backward -> the unique escape from a dead-end (helps LOST).
+TURN_INNER_FRAC = 0.25   # 0 = sharp pivot-ish, 1 = straight; 0.25 = gentle arc
 
 # ---------------------------------------------------------------------------
 # Q-learning hyperparameters

@@ -61,17 +61,21 @@ class Robot(object):
         self.right.on(SpeedPercent(right_pct))
 
     def act(self, action):
-        """Execute one action primitive (non-blocking motor set)."""
+        """Execute one action primitive (non-blocking motor set).
+
+        LEFT/RIGHT are gentle forward-ARCS (inner wheel slowed, not reversed) so
+        the robot corrects while still advancing along the edge. Only REVERSE
+        moves backward -- making it the distinct escape from a dead-end."""
         s = self.speed
-        t = config.TURN_DIFF
+        inner = s * config.TURN_INNER_FRAC
         if action == FORWARD:
             self._drive(s, s)
         elif action == REVERSE:
             self._drive(-s, -s)
         elif action == LEFT:
-            self._drive(-t, t)     # left wheel back, right fwd -> pivot left
+            self._drive(inner, s)   # left wheel slow -> arc left, still moving
         elif action == RIGHT:
-            self._drive(t, -t)     # left wheel fwd, right back -> pivot right
+            self._drive(s, inner)   # right wheel slow -> arc right, still moving
 
     def stop(self):
         self.left.off()

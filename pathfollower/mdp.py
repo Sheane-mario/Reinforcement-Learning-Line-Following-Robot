@@ -86,14 +86,14 @@ def reward(state, action):
     brightness = state[0]
 
     if brightness == EDGE:
-        base = 10.0
+        base = config.REWARD_EDGE
         if action == FORWARD:
-            base += 2.0   # progress bonus for moving along the line
+            base += config.REWARD_FORWARD_BONUS   # progress bonus along the line
         return base
     if brightness == WHITE:
-        return 0.0
+        return config.REWARD_OFF
     if brightness == BLACK:
-        return 0.0
+        return config.REWARD_OFF
     if brightness == LOST:
-        return -10.0
-    return 0.0
+        return config.REWARD_LOST
+    return config.REWARD_OFF
